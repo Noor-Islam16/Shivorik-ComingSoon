@@ -2,9 +2,6 @@ import { useEffect, useState } from "react";
 
 // ─────────────────────────────────────────────────────────────────
 //  🚀 SET YOUR FIXED LAUNCH DATE HERE — never resets on page reload
-//     Change this to your real launch date before deploying.
-//     Format: new Date("YYYY-MM-DDTHH:MM:SS")  ← local time
-//     OR UTC:  new Date(Date.UTC(2025, 8, 5, 0, 0, 0))  ← Sep 5 2025
 // ─────────────────────────────────────────────────────────────────
 const LAUNCH_DATE = new Date("2026-04-07T00:00:00");
 
@@ -41,7 +38,6 @@ interface Particle {
   delay: number;
 }
 
-// ─── Pure helper — called every tick, always reads live Date.now() ─
 function pad(n: number) {
   return String(n).padStart(2, "0");
 }
@@ -57,7 +53,7 @@ function calcTimeLeft(): TimeLeft {
   };
 }
 
-// ─── Keyframes injected into <head> once ─────────────────────────
+// ─── Keyframes ───────────────────────────────────────────────────
 const KEYFRAMES = `
 @keyframes charReveal {
   from { opacity:0; transform:translateY(70px) rotateX(-45deg); }
@@ -102,9 +98,170 @@ const KEYFRAMES = `
   60%  { opacity:0; transform:translateY(55%);  }
   100% { opacity:1; transform:translateY(0);    }
 }
+
+/* ── Responsive helpers ─────────────────────────────────────── */
+* { box-sizing: border-box; }
+
+/* Header / Footer padding */
+.cs-header, .cs-footer {
+  padding: 18px 44px;
+}
+@media (max-width: 600px) {
+  .cs-header, .cs-footer { padding: 14px 18px; }
+}
+
+/* Brand logo size */
+.cs-logo {
+  font-size: 1.55rem;
+  letter-spacing: 0.14em;
+}
+@media (max-width: 400px) {
+  .cs-logo { font-size: 1.2rem; }
+}
+
+/* Status badge — hide text on very small screens */
+.cs-status-text {
+  display: inline;
+}
+@media (max-width: 360px) {
+  .cs-status-text { display: none; }
+}
+
+/* Main padding */
+.cs-main {
+  padding: 120px 24px 100px;
+}
+@media (max-width: 768px) {
+  .cs-main { padding: 100px 20px 90px; }
+}
+@media (max-width: 480px) {
+  .cs-main { padding: 90px 16px 80px; }
+}
+
+/* Eyebrow */
+.cs-eyebrow {
+  font-size: 0.7rem;
+  letter-spacing: 0.28em;
+}
+@media (max-width: 480px) {
+  .cs-eyebrow { font-size: 0.58rem; letter-spacing: 0.18em; }
+}
+
+/* Hero title */
+.cs-hero-title {
+  font-size: clamp(4.5rem, 18vw, 13.5rem);
+}
+@media (max-width: 480px) {
+  .cs-hero-title { font-size: clamp(3.8rem, 20vw, 4rem); letter-spacing: 0.03em; }
+}
+
+/* Tagline */
+.cs-tagline {
+  font-size: clamp(0.8rem, 1.4vw, 1rem);
+  max-width: 520px;
+}
+@media (max-width: 480px) {
+  .cs-tagline { font-size: 0.82rem; max-width: 100%; padding: 0 4px; }
+}
+
+/* COMING SOON flip row */
+.cs-flip-row {
+  font-size: clamp(0.78rem, 2.2vw, 1.3rem);
+  letter-spacing: 0.18em;
+}
+@media (max-width: 480px) {
+  .cs-flip-row { font-size: clamp(0.68rem, 3.5vw, 0.95rem); letter-spacing: 0.12em; }
+}
+
+/* Countdown row */
+.cs-countdown {
+  gap: 10px;
+  margin-top: 52px;
+}
+@media (max-width: 480px) {
+  .cs-countdown { gap: 6px; margin-top: 40px; }
+}
+
+/* CountBlock card */
+.cs-block-card {
+  padding: 18px 26px;
+  min-width: 88px;
+  border-radius: 12px;
+}
+@media (max-width: 768px) {
+  .cs-block-card { padding: 14px 18px; min-width: 72px; border-radius: 10px; }
+}
+@media (max-width: 480px) {
+  .cs-block-card { padding: 10px 12px; min-width: 58px; border-radius: 8px; }
+}
+
+/* Countdown number */
+.cs-count-num {
+  font-size: clamp(2.4rem, 5vw, 3.6rem);
+}
+@media (max-width: 768px) {
+  .cs-count-num { font-size: clamp(2rem, 6vw, 2.8rem); }
+}
+@media (max-width: 480px) {
+  .cs-count-num { font-size: clamp(1.6rem, 7vw, 2.2rem); }
+}
+
+/* Countdown colon */
+.cs-colon {
+  font-size: clamp(2.2rem, 4vw, 3.2rem);
+  padding-top: 18px;
+}
+@media (max-width: 768px) {
+  .cs-colon { font-size: clamp(1.8rem, 5vw, 2.6rem); padding-top: 14px; }
+}
+@media (max-width: 480px) {
+  .cs-colon { font-size: clamp(1.4rem, 5.5vw, 2rem); padding-top: 10px; }
+}
+
+/* Countdown unit label */
+.cs-unit-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.22em;
+}
+@media (max-width: 480px) {
+  .cs-unit-label { font-size: 0.48rem; letter-spacing: 0.12em; }
+}
+
+/* Email input row */
+.cs-notify-row {
+  flex-direction: row;
+  gap: 12px;
+}
+@media (max-width: 540px) {
+  .cs-notify-row { flex-direction: column; align-items: stretch; gap: 10px; }
+}
+
+/* Email input */
+.cs-email-input {
+  width: 280px;
+}
+@media (max-width: 540px) {
+  .cs-email-input { width: 100%; max-width: 360px; }
+}
+
+/* Notify button */
+.cs-notify-btn {
+  padding: 14px 30px;
+}
+@media (max-width: 540px) {
+  .cs-notify-btn { width: 100%; max-width: 360px; padding: 14px 20px; }
+}
+
+/* Footer text */
+.cs-footer-text {
+  font-size: 0.62rem;
+}
+@media (max-width: 480px) {
+  .cs-footer-text { font-size: 0.52rem; letter-spacing: 0.08em; }
+}
 `;
 
-// ─── FlipChar — COMING SOON entrance (number → letter) ───────────
+// ─── FlipChar ─────────────────────────────────────────────────────
 function FlipChar({
   num,
   ltr,
@@ -127,7 +284,6 @@ function FlipChar({
         minWidth: ltr === "M" || ltr === "W" ? "1.1em" : "0.75em",
       }}
     >
-      {/* number slides up and out */}
       <span
         style={{
           display: "block",
@@ -143,7 +299,6 @@ function FlipChar({
       >
         {num}
       </span>
-      {/* letter slides in from below */}
       <span
         style={{
           display: "block",
@@ -160,8 +315,7 @@ function FlipChar({
   );
 }
 
-// ─── CountBlock — exact HTML version style ────────────────────────
-//   gradient white number, monospace label, colon handled outside
+// ─── CountBlock ───────────────────────────────────────────────────
 function CountBlock({ value, label }: { value: number; label: string }) {
   return (
     <div
@@ -173,12 +327,10 @@ function CountBlock({ value, label }: { value: number; label: string }) {
       }}
     >
       <div
+        className="cs-block-card"
         style={{
           background: "rgba(255,255,255,0.03)",
           border: "1px solid rgba(255,255,255,0.08)",
-          borderRadius: 12,
-          padding: "18px 26px",
-          minWidth: 88,
           textAlign: "center",
           transition: "border-color 0.3s, box-shadow 0.3s",
           cursor: "default",
@@ -194,15 +346,11 @@ function CountBlock({ value, label }: { value: number; label: string }) {
           (e.currentTarget as HTMLElement).style.boxShadow = "none";
         }}
       >
-        {/*
-          key={value} forces React to remount this <span> every time
-          the number changes → CSS animation restarts from scratch every second
-        */}
         <span
           key={value}
+          className="cs-count-num"
           style={{
             fontFamily: "'Bebas Neue', sans-serif",
-            fontSize: "clamp(2.4rem, 5vw, 3.6rem)",
             lineHeight: 1,
             display: "block",
             letterSpacing: "0.04em",
@@ -218,10 +366,9 @@ function CountBlock({ value, label }: { value: number; label: string }) {
         </span>
       </div>
       <span
+        className="cs-unit-label"
         style={{
           fontFamily: "monospace",
-          fontSize: "0.6rem",
-          letterSpacing: "0.22em",
           textTransform: "uppercase",
           color: "rgba(255,255,255,0.35)",
         }}
@@ -239,7 +386,6 @@ export default function ComingSoon() {
   const [notified, setNotified] = useState(false);
   const [emailError, setEmailError] = useState(false);
 
-  // Stable random particles — never recalculated
   const [particles] = useState<Particle[]>(() =>
     Array.from({ length: 24 }, (_, i) => ({
       id: i,
@@ -250,7 +396,6 @@ export default function ComingSoon() {
     })),
   );
 
-  // Inject keyframes once on mount
   useEffect(() => {
     const tag = document.createElement("style");
     tag.innerHTML = KEYFRAMES;
@@ -260,8 +405,6 @@ export default function ComingSoon() {
     };
   }, []);
 
-  // ── Accurate countdown: recalculates from real Date.now() every tick
-  //    Never drifts — even if tab is backgrounded or system clock changes
   useEffect(() => {
     const id = setInterval(() => setTimeLeft(calcTimeLeft()), 1000);
     return () => clearInterval(id);
@@ -277,7 +420,6 @@ export default function ComingSoon() {
     setEmail("");
   }
 
-  // ─── Render ────────────────────────────────────────────────────
   return (
     <div
       style={{
@@ -349,8 +491,9 @@ export default function ComingSoon() {
         ))}
       </div>
 
-      {/* Top bar */}
+      {/* Header */}
       <header
+        className="cs-header"
         style={{
           position: "fixed",
           top: 0,
@@ -360,7 +503,6 @@ export default function ComingSoon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          padding: "22px 44px",
           borderBottom: "1px solid rgba(255,255,255,0.06)",
           background: "rgba(6,6,6,0.65)",
           backdropFilter: "blur(24px)",
@@ -368,11 +510,8 @@ export default function ComingSoon() {
         }}
       >
         <span
-          style={{
-            fontFamily: "'Bebas Neue', sans-serif",
-            fontSize: "1.55rem",
-            letterSpacing: "0.14em",
-          }}
+          className="cs-logo"
+          style={{ fontFamily: "'Bebas Neue', sans-serif" }}
         >
           SHIV<span style={{ color: GREEN }}>.</span>ORIK
         </span>
@@ -395,15 +534,17 @@ export default function ComingSoon() {
               borderRadius: "50%",
               background: GREEN,
               display: "inline-block",
+              flexShrink: 0,
               animation: "blink 2s ease-in-out infinite",
             }}
           />
-          In Development
+          <span className="cs-status-text">In Development</span>
         </span>
       </header>
 
-      {/* Content */}
+      {/* Main */}
       <main
+        className="cs-main"
         style={{
           position: "relative",
           zIndex: 1,
@@ -411,17 +552,15 @@ export default function ComingSoon() {
           flexDirection: "column",
           alignItems: "center",
           textAlign: "center",
-          padding: "120px 24px 100px",
           width: "100%",
           maxWidth: 920,
         }}
       >
         {/* Eyebrow */}
         <p
+          className="cs-eyebrow"
           style={{
             fontFamily: "monospace",
-            fontSize: "0.7rem",
-            letterSpacing: "0.28em",
             textTransform: "uppercase",
             color: GREEN,
             marginBottom: 28,
@@ -436,9 +575,9 @@ export default function ComingSoon() {
           {/* shimmer overlay */}
           <h1
             aria-hidden="true"
+            className="cs-hero-title"
             style={{
               fontFamily: "'Bebas Neue', sans-serif",
-              fontSize: "clamp(5.5rem, 15vw, 13.5rem)",
               letterSpacing: "0.05em",
               lineHeight: 0.9,
               position: "absolute",
@@ -458,13 +597,14 @@ export default function ComingSoon() {
 
           {/* staggered character reveal */}
           <h1
+            className="cs-hero-title"
             style={{
               fontFamily: "'Bebas Neue', sans-serif",
-              fontSize: "clamp(5.5rem, 15vw, 13.5rem)",
               letterSpacing: "0.05em",
               lineHeight: 0.9,
               color: "#ffffff",
               display: "flex",
+              margin: 0,
             }}
           >
             {BRAND.split("").map((ch, i) => (
@@ -485,13 +625,12 @@ export default function ComingSoon() {
 
         {/* Tagline */}
         <p
+          className="cs-tagline"
           style={{
-            fontSize: "clamp(0.82rem, 1.4vw, 1rem)",
             color: "rgba(255,255,255,0.38)",
             letterSpacing: "0.04em",
             lineHeight: 1.75,
             marginTop: 22,
-            maxWidth: 520,
             animation: "fadeUp 0.8s 1.9s ease both",
           }}
         >
@@ -502,10 +641,9 @@ export default function ComingSoon() {
         {/* COMING SOON flip */}
         <div style={{ marginTop: 44, animation: "fadeUp 0.6s 2.0s ease both" }}>
           <div
+            className="cs-flip-row"
             style={{
               fontFamily: "monospace",
-              fontSize: "clamp(0.95rem, 2.2vw, 1.3rem)",
-              letterSpacing: "0.18em",
               textTransform: "uppercase",
               display: "flex",
               alignItems: "center",
@@ -525,11 +663,10 @@ export default function ComingSoon() {
 
         {/* Countdown */}
         <div
+          className="cs-countdown"
           style={{
             display: "flex",
-            gap: 16,
             alignItems: "flex-start",
-            marginTop: 64,
             flexWrap: "wrap",
             justifyContent: "center",
             animation: "fadeUp 0.8s 3.6s ease both",
@@ -538,17 +675,20 @@ export default function ComingSoon() {
           {(["days", "hours", "minutes", "seconds"] as const).map((unit, i) => (
             <div
               key={unit}
-              style={{ display: "flex", alignItems: "flex-start", gap: 16 }}
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                gap: "inherit",
+              }}
             >
               <CountBlock value={timeLeft[unit]} label={unit} />
               {i < 3 && (
                 <span
+                  className="cs-colon"
                   style={{
                     fontFamily: "'Bebas Neue', sans-serif",
-                    fontSize: "clamp(2.2rem, 4vw, 3.2rem)",
                     color: "rgba(255,255,255,0.18)",
                     lineHeight: 1,
-                    paddingTop: 18,
                   }}
                 >
                   :
@@ -576,6 +716,7 @@ export default function ComingSoon() {
             marginTop: 48,
             animation: "fadeUp 0.8s 4.1s ease both",
             width: "100%",
+            maxWidth: 560,
           }}
         >
           <p
@@ -613,10 +754,10 @@ export default function ComingSoon() {
             </div>
           ) : (
             <div
+              className="cs-notify-row"
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 12,
                 justifyContent: "center",
                 flexWrap: "wrap",
               }}
@@ -627,6 +768,7 @@ export default function ComingSoon() {
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleNotify()}
                 placeholder="Enter your email address"
+                className="cs-email-input"
                 style={{
                   background: "rgba(255,255,255,0.04)",
                   border: `1px solid ${emailError ? "#ff4444" : "rgba(255,255,255,0.1)"}`,
@@ -634,7 +776,6 @@ export default function ComingSoon() {
                   padding: "14px 20px",
                   color: "#ffffff",
                   fontSize: "0.88rem",
-                  width: 280,
                   outline: "none",
                   fontFamily: "inherit",
                   letterSpacing: "0.02em",
@@ -656,12 +797,12 @@ export default function ComingSoon() {
               />
               <button
                 onClick={handleNotify}
+                className="cs-notify-btn"
                 style={{
                   background: GREEN,
                   color: "#000000",
                   border: "none",
                   borderRadius: 8,
-                  padding: "14px 30px",
                   fontSize: "0.85rem",
                   fontWeight: 700,
                   letterSpacing: "0.08em",
@@ -701,6 +842,7 @@ export default function ComingSoon() {
 
       {/* Footer */}
       <footer
+        className="cs-header cs-footer cs-footer-text"
         style={{
           position: "fixed",
           bottom: 0,
@@ -710,19 +852,17 @@ export default function ComingSoon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          padding: "18px 44px",
           borderTop: "1px solid rgba(255,255,255,0.06)",
           background: "rgba(6,6,6,0.65)",
           backdropFilter: "blur(24px)",
           fontFamily: "monospace",
-          fontSize: "0.62rem",
           color: "rgba(255,255,255,0.18)",
           letterSpacing: "0.12em",
           textTransform: "uppercase",
           animation: "fadeUp 0.7s 4.4s ease both",
         }}
       >
-        <span>© 2025 Shivorik</span>
+        <span>© 2026 Shivorik</span>
         <span>All Rights Reserved</span>
       </footer>
     </div>
