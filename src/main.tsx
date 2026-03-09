@@ -1,7 +1,7 @@
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-// import Home from "./pages/Home";
+import Home from "./pages/Home";
 import ComingSoon from "./pages/ComingSoon";
 
 // Main App component
@@ -19,10 +19,10 @@ const router = createBrowserRouter([
         element: <ComingSoon />,
       },
 
-      // {
-      //   path: "mac-services",
-      //   element: <Apple />,
-      // },
+      {
+        path: "production/full-website",
+        element: <Home />,
+      },
     ],
   },
   // Separate, top-level route for the Admin page WITHOUT the Layout
