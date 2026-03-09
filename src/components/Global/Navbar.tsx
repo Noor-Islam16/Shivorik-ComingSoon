@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import IntakeModal from "../Home/IntakeModal";
+import logo from "../../assets/logo.jpeg";
 
 const navLinks = [
   { label: "How it works", href: "#how-it-works" },
@@ -15,7 +16,7 @@ const navLinks = [
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false); // State for modal
+  const [modalOpen, setModalOpen] = useState(false);
   const navRef = useRef<HTMLElement>(null);
   const [navHeight, setNavHeight] = useState(64);
 
@@ -47,10 +48,9 @@ export default function Navbar() {
     return () => document.removeEventListener("click", handleAnchorClick);
   }, []);
 
-  // Function to open modal
   const openModal = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent any default link behavior
-    setMenuOpen(false); // Close mobile menu if open
+    e.preventDefault();
+    setMenuOpen(false);
     setModalOpen(true);
   };
 
@@ -184,7 +184,7 @@ export default function Navbar() {
 
         .cta-wrapper:active { transform: scale(0.96); }
 
-        /* ── Navbar: always fixed, spacer holds layout ── */
+        /* ── Navbar ── */
         .shivorik-header {
           position: fixed;
           top: 0;
@@ -210,31 +210,35 @@ export default function Navbar() {
           -webkit-backdrop-filter: blur(14px);
           box-shadow: 0 4px 32px rgba(0,0,0,0.5);
         }
+
+        /* ── Responsive logo ── */
+        .nav-logo {
+          height: 90px;
+          width: auto;
+          object-fit: contain;
+          display: block;
+        }
+        @media (max-width: 1024px) {
+          .nav-logo { height: 60px; }
+        }
+        @media (max-width: 768px) {
+          .nav-logo { height: 56px; }
+        }
+        @media (max-width: 480px) {
+          .nav-logo { height: 52px; }
+        }
       `}</style>
 
-      {/*
-        Spacer — always rendered, always exactly navbar height.
-        Since the navbar is always fixed (never in flow), this prevents
-        content from jumping under the bar.
-      */}
       <div style={{ height: navHeight }} aria-hidden="true" />
 
       <header
         ref={navRef}
         className={`shivorik-header ${scrolled ? "shivorik-header--scrolled" : "shivorik-header--top"}`}
       >
-        <div className="max-w-[1440px] mx-auto px-10 sm:px-10 lg:px-20 h-16 flex items-center justify-between">
+        <div className="max-w-[1440px] mx-auto px-10 sm:px-10 lg:px-20 h-16 md:h-16 lg:h-24 flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#7B5CF0] via-[#3B8BFF] to-[#14EC5C] flex items-center justify-center shadow-lg" />
-            <div className="flex flex-col leading-tight">
-              <span className="text-white font-semibold text-base tracking-wide">
-                Shivorik
-              </span>
-              <span className="text-white/40 text-sm font-normal">
-                72-Hour Security Rescue
-              </span>
-            </div>
+          <div className="flex items-center shrink-0">
+            <img src={logo} alt="Shivorik" className="nav-logo" />
           </div>
 
           {/* Desktop Nav */}
@@ -307,7 +311,6 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* Modal */}
       <IntakeModal open={modalOpen} onClose={() => setModalOpen(false)} />
     </>
   );
