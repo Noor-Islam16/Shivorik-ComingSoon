@@ -1,11 +1,8 @@
 import { useEffect, useState } from "react";
+import logo from "../assets/logo.jpeg";
 
-// ─────────────────────────────────────────────────────────────────
-//  🚀 SET YOUR FIXED LAUNCH DATE HERE — never resets on page reload
-// ─────────────────────────────────────────────────────────────────
 const LAUNCH_DATE = new Date("2026-04-07T00:00:00");
 
-// ─── Config ──────────────────────────────────────────────────────
 const BRAND = "SHIVORIK";
 const GREEN = "#14EC5C";
 const COMING_SOON_CHARS = [
@@ -23,7 +20,6 @@ const COMING_SOON_CHARS = [
 ];
 const RANDOM_NUMS = ["3", "0", "8", "1", "4", "6", " ", "5", "9", "2", "7"];
 
-// ─── Types ───────────────────────────────────────────────────────
 interface TimeLeft {
   days: number;
   hours: number;
@@ -53,7 +49,6 @@ function calcTimeLeft(): TimeLeft {
   };
 }
 
-// ─── Keyframes ───────────────────────────────────────────────────
 const KEYFRAMES = `
 @keyframes charReveal {
   from { opacity:0; transform:translateY(70px) rotateX(-45deg); }
@@ -99,10 +94,22 @@ const KEYFRAMES = `
   100% { opacity:1; transform:translateY(0);    }
 }
 
-/* ── Responsive helpers ─────────────────────────────────────── */
 * { box-sizing: border-box; }
 
-/* Header / Footer padding */
+/* Logo */
+.cs-logo-img {
+  height: 120px;
+}
+@media (max-width: 768px) {
+  .cs-logo-img { height: 80px; }
+}
+@media (max-width: 480px) {
+  .cs-logo-img { height: 56px; }
+}
+@media (max-width: 360px) {
+  .cs-logo-img { height: 44px; }
+}
+
 .cs-header, .cs-footer {
   padding: 18px 44px;
 }
@@ -110,7 +117,6 @@ const KEYFRAMES = `
   .cs-header, .cs-footer { padding: 14px 18px; }
 }
 
-/* Brand logo size */
 .cs-logo {
   font-size: 1.55rem;
   letter-spacing: 0.14em;
@@ -119,7 +125,6 @@ const KEYFRAMES = `
   .cs-logo { font-size: 1.2rem; }
 }
 
-/* Status badge — hide text on very small screens */
 .cs-status-text {
   display: inline;
 }
@@ -127,7 +132,6 @@ const KEYFRAMES = `
   .cs-status-text { display: none; }
 }
 
-/* Main padding */
 .cs-main {
   padding: 120px 24px 100px;
 }
@@ -138,7 +142,6 @@ const KEYFRAMES = `
   .cs-main { padding: 90px 16px 80px; }
 }
 
-/* Eyebrow */
 .cs-eyebrow {
   font-size: 0.7rem;
   letter-spacing: 0.28em;
@@ -147,7 +150,6 @@ const KEYFRAMES = `
   .cs-eyebrow { font-size: 0.58rem; letter-spacing: 0.18em; }
 }
 
-/* Hero title */
 .cs-hero-title {
   font-size: clamp(4.5rem, 18vw, 13.5rem);
 }
@@ -155,7 +157,6 @@ const KEYFRAMES = `
   .cs-hero-title { font-size: clamp(3.8rem, 20vw, 4rem); letter-spacing: 0.03em; }
 }
 
-/* Tagline */
 .cs-tagline {
   font-size: clamp(0.8rem, 1.4vw, 1rem);
   max-width: 520px;
@@ -164,7 +165,6 @@ const KEYFRAMES = `
   .cs-tagline { font-size: 0.82rem; max-width: 100%; padding: 0 4px; }
 }
 
-/* COMING SOON flip row */
 .cs-flip-row {
   font-size: clamp(0.78rem, 2.2vw, 1.3rem);
   letter-spacing: 0.18em;
@@ -173,7 +173,6 @@ const KEYFRAMES = `
   .cs-flip-row { font-size: clamp(0.68rem, 3.5vw, 0.95rem); letter-spacing: 0.12em; }
 }
 
-/* Countdown row */
 .cs-countdown {
   gap: 10px;
   margin-top: 52px;
@@ -182,7 +181,6 @@ const KEYFRAMES = `
   .cs-countdown { gap: 6px; margin-top: 40px; }
 }
 
-/* CountBlock card */
 .cs-block-card {
   padding: 18px 26px;
   min-width: 88px;
@@ -195,7 +193,6 @@ const KEYFRAMES = `
   .cs-block-card { padding: 10px 12px; min-width: 58px; border-radius: 8px; }
 }
 
-/* Countdown number */
 .cs-count-num {
   font-size: clamp(2.4rem, 5vw, 3.6rem);
 }
@@ -206,7 +203,6 @@ const KEYFRAMES = `
   .cs-count-num { font-size: clamp(1.6rem, 7vw, 2.2rem); }
 }
 
-/* Countdown colon */
 .cs-colon {
   font-size: clamp(2.2rem, 4vw, 3.2rem);
   padding-top: 18px;
@@ -218,7 +214,6 @@ const KEYFRAMES = `
   .cs-colon { font-size: clamp(1.4rem, 5.5vw, 2rem); padding-top: 10px; }
 }
 
-/* Countdown unit label */
 .cs-unit-label {
   font-size: 0.6rem;
   letter-spacing: 0.22em;
@@ -227,7 +222,6 @@ const KEYFRAMES = `
   .cs-unit-label { font-size: 0.48rem; letter-spacing: 0.12em; }
 }
 
-/* Email input row */
 .cs-notify-row {
   flex-direction: row;
   gap: 12px;
@@ -236,7 +230,6 @@ const KEYFRAMES = `
   .cs-notify-row { flex-direction: column; align-items: stretch; gap: 10px; }
 }
 
-/* Email input */
 .cs-email-input {
   width: 280px;
 }
@@ -244,7 +237,6 @@ const KEYFRAMES = `
   .cs-email-input { width: 100%; max-width: 360px; }
 }
 
-/* Notify button */
 .cs-notify-btn {
   padding: 14px 30px;
 }
@@ -252,7 +244,6 @@ const KEYFRAMES = `
   .cs-notify-btn { width: 100%; max-width: 360px; padding: 14px 20px; }
 }
 
-/* Footer text */
 .cs-footer-text {
   font-size: 0.62rem;
 }
@@ -261,7 +252,6 @@ const KEYFRAMES = `
 }
 `;
 
-// ─── FlipChar ─────────────────────────────────────────────────────
 function FlipChar({
   num,
   ltr,
@@ -315,7 +305,6 @@ function FlipChar({
   );
 }
 
-// ─── CountBlock ───────────────────────────────────────────────────
 function CountBlock({ value, label }: { value: number; label: string }) {
   return (
     <div
@@ -379,7 +368,6 @@ function CountBlock({ value, label }: { value: number; label: string }) {
   );
 }
 
-// ─── Root component ───────────────────────────────────────────────
 export default function ComingSoon() {
   const [timeLeft, setTimeLeft] = useState<TimeLeft>(calcTimeLeft);
   const [email, setEmail] = useState("");
@@ -442,8 +430,7 @@ export default function ComingSoon() {
           zIndex: 0,
           pointerEvents: "none",
           backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px)," +
-            "linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px)",
+            "linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px)",
           backgroundSize: "80px 80px",
           animation: "gridMove 20s linear infinite",
         }}
@@ -457,8 +444,7 @@ export default function ComingSoon() {
           zIndex: 0,
           pointerEvents: "none",
           background:
-            "radial-gradient(ellipse 65% 45% at 50% 62%, rgba(20,236,92,0.09) 0%, transparent 70%)," +
-            "radial-gradient(ellipse 50% 40% at 15% 15%, rgba(20,236,92,0.04) 0%, transparent 60%)",
+            "radial-gradient(ellipse 65% 45% at 50% 62%, rgba(20,236,92,0.09) 0%, transparent 70%),radial-gradient(ellipse 50% 40% at 15% 15%, rgba(20,236,92,0.04) 0%, transparent 60%)",
           animation: "glowPulse 6s ease-in-out infinite alternate",
         }}
       />
@@ -504,17 +490,16 @@ export default function ComingSoon() {
           alignItems: "center",
           justifyContent: "space-between",
           borderBottom: "1px solid rgba(255,255,255,0.06)",
-          background: "rgba(6,6,6,0.65)",
-          backdropFilter: "blur(24px)",
+          background: "#060606",
           animation: "fadeDown 0.8s 0.2s ease both",
         }}
       >
-        <span
-          className="cs-logo"
-          style={{ fontFamily: "'Bebas Neue', sans-serif" }}
-        >
-          SHIV<span style={{ color: GREEN }}>.</span>ORIK
-        </span>
+        <img
+          src={logo}
+          alt={BRAND}
+          className="cs-logo-img"
+          style={{ width: "auto", objectFit: "contain" }}
+        />
         <span
           style={{
             display: "flex",
@@ -572,7 +557,6 @@ export default function ComingSoon() {
 
         {/* Hero title */}
         <div style={{ position: "relative", perspective: 600 }}>
-          {/* shimmer overlay */}
           <h1
             aria-hidden="true"
             className="cs-hero-title"
@@ -594,8 +578,6 @@ export default function ComingSoon() {
           >
             {BRAND}
           </h1>
-
-          {/* staggered character reveal */}
           <h1
             className="cs-hero-title"
             style={{
@@ -853,8 +835,7 @@ export default function ComingSoon() {
           alignItems: "center",
           justifyContent: "space-between",
           borderTop: "1px solid rgba(255,255,255,0.06)",
-          background: "rgba(6,6,6,0.65)",
-          backdropFilter: "blur(24px)",
+          background: "#060606",
           fontFamily: "monospace",
           color: "rgba(255,255,255,0.18)",
           letterSpacing: "0.12em",
