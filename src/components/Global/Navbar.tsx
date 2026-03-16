@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import IntakeModal from "../Home/IntakeModal";
-import logo from "../../assets/logo.jpeg";
+import logo from "../../assets/logo.png";
 
 const navLinks = [
   { label: "How it works", href: "#how-it-works" },

@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { motion, useInView, easeInOut } from "framer-motion";
+import logo from "../../assets/logo.png";
 
 const fadeLeft = {
   hidden: { opacity: 0, x: -50 },
@@ -59,28 +60,30 @@ export default function Footer() {
           <div className="flex flex-col gap-6 max-w-4xl">
             {/* Logo — item 0 */}
             <motion.div
-              className="flex items-center gap-3"
               variants={fadeLeft}
               initial="hidden"
               animate={inView ? "visible" : "hidden"}
               custom={0}
             >
-              <div
-                className="w-9 h-9 rounded-full flex-shrink-0 overflow-hidden"
-                style={{
-                  background:
-                    "conic-gradient(from 135deg, #6366f1, #a855f7, #ec4899, #f59e0b, #6366f1)",
-                }}
-              />
-              <div className="flex flex-col leading-tight">
-                <span className="text-white font-medium text-base">
-                  Shivorik
-                </span>
-                <span className="text-white text-sm">72-Hour Security</span>
-                <span className="text-white text-sm">Rescue</span>
-              </div>
+              <style>{`
+    .footer-logo {
+      height: 80px;
+      width: auto;
+      object-fit: contain;
+      display: block;
+    }
+    @media (max-width: 1024px) {
+      .footer-logo { height: 60px; }
+    }
+    @media (max-width: 768px) {
+      .footer-logo { height: 52px; }
+    }
+    @media (max-width: 480px) {
+      .footer-logo { height: 46px; }
+    }
+  `}</style>
+              <img src={logo} alt="Shivorik" className="footer-logo" />
             </motion.div>
-
             {/* Disclaimer — item 1 */}
             <motion.p
               className="text-white/70 text-base leading-relaxed"
