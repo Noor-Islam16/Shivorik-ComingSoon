@@ -38,12 +38,15 @@ const deliveryFormats = [
   { value: "portal", label: "Portal Copy ready" },
 ];
 
-// Step definitions
 const STEPS = [
   { id: 1, title: "Who are you?", subtitle: "Tell us about yourself" },
   { id: 2, title: "Your situation", subtitle: "Help us understand the scope" },
   { id: 3, title: "Ready to launch", subtitle: "Confirm and submit" },
 ];
+
+// ── Change this to your actual backend URL ──────────────────────────────────
+const API_URL = import.meta.env.VITE_PUBLIC_API_URL || "http://localhost:5000";
+// ────────────────────────────────────────────────────────────────────────────
 
 interface FormData {
   name: string;
@@ -51,18 +54,33 @@ interface FormData {
   company: string;
   package: string;
   selectedAddOns: string[];
-  // Step 2
   questionnaireLink: string;
   unitsNeeded: string;
   rushHandling: string;
   deadline: string;
   deliveryFormat: string;
   evidenceFolder: string;
-  // Step 3
   additionalNotes: string;
   phone: string;
   consent: boolean;
 }
+
+const defaultForm: FormData = {
+  name: "",
+  email: "",
+  company: "",
+  package: "",
+  selectedAddOns: [],
+  questionnaireLink: "",
+  unitsNeeded: "",
+  rushHandling: "No",
+  deadline: "",
+  deliveryFormat: "excel",
+  evidenceFolder: "",
+  additionalNotes: "",
+  phone: "",
+  consent: false,
+};
 
 export default function IntakeModal({
   open,
@@ -73,29 +91,15 @@ export default function IntakeModal({
 }) {
   const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [addOnsOpen, setAddOnsOpen] = useState(false);
-  const [form, setForm] = useState<FormData>({
-    name: "",
-    email: "",
-    company: "",
-    package: "",
-    selectedAddOns: [],
-    questionnaireLink: "",
-    unitsNeeded: "",
-    rushHandling: "No",
-    deadline: "",
-    deliveryFormat: "excel",
-    evidenceFolder: "",
-    additionalNotes: "",
-    phone: "",
-    consent: false,
-  });
+  const [form, setForm] = useState<FormData>(defaultForm);
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>(
     {},
   );
   const overlayRef = useRef<HTMLDivElement>(null);
 
-  // Lock body scroll when open
   useEffect(() => {
     if (open) {
       document.body.style.overflow = "hidden";
@@ -104,24 +108,10 @@ export default function IntakeModal({
       setTimeout(() => {
         setStep(1);
         setSubmitted(false);
+        setSubmitError(null);
         setErrors({});
         setAddOnsOpen(false);
-        setForm({
-          name: "",
-          email: "",
-          company: "",
-          package: "",
-          selectedAddOns: [],
-          questionnaireLink: "",
-          unitsNeeded: "",
-          rushHandling: "No",
-          deadline: "",
-          deliveryFormat: "excel",
-          evidenceFolder: "",
-          additionalNotes: "",
-          phone: "",
-          consent: false,
-        });
+        setForm(defaultForm);
       }, 400);
     }
     return () => {
@@ -156,9 +146,6 @@ export default function IntakeModal({
       if (!form.company.trim()) errs.company = "Company is required";
       if (!form.package) errs.package = "Please select a package";
     }
-    if (s === 2) {
-      // No required fields in step 2 (all optional per images)
-    }
     if (s === 3) {
       if (!form.consent) errs.consent = "You must agree to continue";
     }
@@ -172,9 +159,34 @@ export default function IntakeModal({
     else handleSubmit();
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validateStep(3)) return;
-    setSubmitted(true);
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const res = await fetch(`${API_URL}/api/intake`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(
+          data.message || "Something went wrong. Please try again.",
+        );
+      }
+
+      setSubmitted(true);
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Network error. Please try again.";
+      setSubmitError(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!open) return null;
@@ -235,7 +247,6 @@ export default function IntakeModal({
           to   { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        /* Top glow bar */
         .im-glow-bar {
           position: absolute;
           top: 0; left: 0; right: 0;
@@ -258,8 +269,6 @@ export default function IntakeModal({
           gap: 16px;
           flex-shrink: 0;
         }
-
-        .im-title-block {}
 
         .im-badge {
           display: inline-flex;
@@ -319,7 +328,6 @@ export default function IntakeModal({
         }
         .im-close:hover { background: rgba(255,255,255,0.1); color: #fff; }
 
-        /* Progress */
         .im-progress-wrap {
           padding: 16px 32px 0;
           flex-shrink: 0;
@@ -397,7 +405,6 @@ export default function IntakeModal({
         .im-step-item.active .im-step-label { color: #14EC5C; }
         .im-step-item.done .im-step-label   { color: rgba(255,255,255,0.5); }
 
-        /* Body */
         .im-body {
           padding: 20px 32px 24px;
         }
@@ -419,12 +426,6 @@ export default function IntakeModal({
         .im-grid-2 {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 10px;
-        }
-
-        .im-grid-1 {
-          display: grid;
-          grid-template-columns: 1fr;
           gap: 10px;
         }
 
@@ -495,7 +496,17 @@ export default function IntakeModal({
           margin-top: -2px;
         }
 
-        /* Add-ons accordion */
+        /* Submit error banner */
+        .im-submit-error {
+          background: rgba(255,80,80,0.08);
+          border: 1px solid rgba(255,80,80,0.25);
+          border-radius: 10px;
+          padding: 12px 16px;
+          font-size: 13px;
+          color: #ff6b6b;
+          margin-bottom: 4px;
+        }
+
         .im-addons-wrap {
           border: 1px solid rgba(255,255,255,0.09);
           border-radius: 12px;
@@ -583,17 +594,9 @@ export default function IntakeModal({
           border-bottom: 1px solid rgba(255,255,255,0.05);
         }
 
-        .im-addon-row:last-child {
-          border-bottom: none;
-        }
-
-        .im-addon-row:hover {
-          background: rgba(255,255,255,0.03);
-        }
-
-        .im-addon-row.sel {
-          background: rgba(20,236,92,0.04);
-        }
+        .im-addon-row:last-child { border-bottom: none; }
+        .im-addon-row:hover { background: rgba(255,255,255,0.03); }
+        .im-addon-row.sel { background: rgba(20,236,92,0.04); }
 
         .im-addon-left {
           display: flex;
@@ -617,15 +620,8 @@ export default function IntakeModal({
           border-color: #14EC5C;
         }
 
-        .im-addon-name {
-          font-size: 13px;
-          color: rgba(255,255,255,0.7);
-          font-family: 'DM Sans', sans-serif;
-        }
-
-        .im-addon-row.sel .im-addon-name {
-          color: #fff;
-        }
+        .im-addon-name { font-size: 13px; color: rgba(255,255,255,0.7); }
+        .im-addon-row.sel .im-addon-name { color: #fff; }
 
         .im-addon-price {
           font-size: 12px;
@@ -635,11 +631,8 @@ export default function IntakeModal({
           white-space: nowrap;
         }
 
-        .im-addon-row.sel .im-addon-price {
-          color: #14EC5C;
-        }
+        .im-addon-row.sel .im-addon-price { color: #14EC5C; }
 
-        /* Selected add-ons count pill */
         .im-addons-count {
           font-size: 10px;
           font-weight: 700;
@@ -652,12 +645,7 @@ export default function IntakeModal({
           margin-left: 6px;
         }
 
-        /* Unit pills */
-        .im-unit-row {
-          display: flex;
-          gap: 6px;
-          flex-wrap: wrap;
-        }
+        .im-unit-row { display: flex; gap: 6px; flex-wrap: wrap; }
 
         .im-unit-pill {
           flex: 1;
@@ -671,30 +659,13 @@ export default function IntakeModal({
           transition: all 0.2s;
         }
 
-        .im-unit-pill:hover {
-          border-color: rgba(20,236,92,0.3);
-          background: rgba(20,236,92,0.05);
-        }
+        .im-unit-pill:hover { border-color: rgba(20,236,92,0.3); background: rgba(20,236,92,0.05); }
+        .im-unit-pill.sel { border-color: #14EC5C; background: rgba(20,236,92,0.1); box-shadow: 0 0 12px rgba(20,236,92,0.15); }
 
-        .im-unit-pill.sel {
-          border-color: #14EC5C;
-          background: rgba(20,236,92,0.1);
-          box-shadow: 0 0 12px rgba(20,236,92,0.15);
-        }
-
-        .im-unit-label {
-          font-size: 11px;
-          font-weight: 600;
-          color: rgba(255,255,255,0.6);
-          font-family: 'Syne', sans-serif;
-        }
+        .im-unit-label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.6); font-family: 'Syne', sans-serif; }
         .im-unit-pill.sel .im-unit-label { color: #14EC5C; }
 
-        /* Rush toggle pills */
-        .im-rush-row {
-          display: flex;
-          gap: 6px;
-        }
+        .im-rush-row { display: flex; gap: 6px; }
 
         .im-rush-pill {
           flex: 1;
@@ -707,31 +678,13 @@ export default function IntakeModal({
           transition: all 0.2s;
         }
 
-        .im-rush-pill:hover {
-          border-color: rgba(20,236,92,0.3);
-          background: rgba(20,236,92,0.05);
-        }
+        .im-rush-pill:hover { border-color: rgba(20,236,92,0.3); background: rgba(20,236,92,0.05); }
+        .im-rush-pill.sel { border-color: #14EC5C; background: rgba(20,236,92,0.1); box-shadow: 0 0 12px rgba(20,236,92,0.15); }
 
-        .im-rush-pill.sel {
-          border-color: #14EC5C;
-          background: rgba(20,236,92,0.1);
-          box-shadow: 0 0 12px rgba(20,236,92,0.15);
-        }
-
-        .im-rush-label {
-          font-size: 11px;
-          font-weight: 600;
-          color: rgba(255,255,255,0.6);
-          font-family: 'Syne', sans-serif;
-        }
+        .im-rush-label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.6); font-family: 'Syne', sans-serif; }
         .im-rush-pill.sel .im-rush-label { color: #14EC5C; }
 
-        /* Delivery format pills */
-        .im-format-row {
-          display: flex;
-          gap: 6px;
-          flex-wrap: wrap;
-        }
+        .im-format-row { display: flex; gap: 6px; flex-wrap: wrap; }
 
         .im-format-pill {
           flex: 1;
@@ -745,34 +698,14 @@ export default function IntakeModal({
           transition: all 0.2s;
         }
 
-        .im-format-pill:hover {
-          border-color: rgba(20,236,92,0.3);
-          background: rgba(20,236,92,0.05);
-        }
+        .im-format-pill:hover { border-color: rgba(20,236,92,0.3); background: rgba(20,236,92,0.05); }
+        .im-format-pill.sel { border-color: #14EC5C; background: rgba(20,236,92,0.1); box-shadow: 0 0 12px rgba(20,236,92,0.15); }
 
-        .im-format-pill.sel {
-          border-color: #14EC5C;
-          background: rgba(20,236,92,0.1);
-          box-shadow: 0 0 12px rgba(20,236,92,0.15);
-        }
-
-        .im-format-label {
-          font-size: 11px;
-          font-weight: 600;
-          color: rgba(255,255,255,0.6);
-          font-family: 'Syne', sans-serif;
-        }
+        .im-format-label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.6); font-family: 'Syne', sans-serif; }
         .im-format-pill.sel .im-format-label { color: #14EC5C; }
 
-        /* Queue note */
-        .im-queue-note {
-          font-size: 12px;
-          color: rgba(255,255,255,0.35);
-          line-height: 1.6;
-          padding: 0;
-        }
+        .im-queue-note { font-size: 12px; color: rgba(255,255,255,0.35); line-height: 1.6; padding: 0; }
 
-        /* Info box for step 3 */
         .im-info-box {
           background: rgba(59, 139, 255, 0.08);
           border: 1px solid rgba(59, 139, 255, 0.2);
@@ -783,71 +716,6 @@ export default function IntakeModal({
           line-height: 1.6;
         }
 
-        /* Summary card for step 3 */
-        .im-summary {
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 16px;
-          padding: 20px;
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-        }
-
-        .im-summary-row {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          gap: 12px;
-        }
-
-        .im-summary-key {
-          font-size: 11px;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.08em;
-          color: rgba(255,255,255,0.3);
-          min-width: 80px;
-        }
-
-        .im-summary-val {
-          font-size: 13px;
-          color: rgba(255,255,255,0.85);
-          text-align: right;
-        }
-
-        .im-summary-divider {
-          height: 1px;
-          background: rgba(255,255,255,0.06);
-        }
-
-        .im-package-highlight {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 12px;
-          background: rgba(20,236,92,0.06);
-          border: 1px solid rgba(20,236,92,0.2);
-          border-radius: 12px;
-          padding: 14px 16px;
-        }
-
-        .im-package-name {
-          font-family: 'Syne', sans-serif;
-          font-size: 14px;
-          font-weight: 700;
-          color: #fff;
-        }
-
-        .im-package-price {
-          font-family: 'Syne', sans-serif;
-          font-size: 20px;
-          font-weight: 800;
-          color: #14EC5C;
-          white-space: nowrap;
-        }
-
-        /* Checkbox */
         .im-checkbox-row {
           display: flex;
           gap: 12px;
@@ -867,18 +735,10 @@ export default function IntakeModal({
           margin-top: 1px;
         }
 
-        .im-checkbox-box.checked {
-          background: #14EC5C;
-          border-color: #14EC5C;
-        }
+        .im-checkbox-box.checked { background: #14EC5C; border-color: #14EC5C; }
 
-        .im-checkbox-text {
-          font-size: 13px;
-          color: rgba(255,255,255,0.45);
-          line-height: 1.5;
-        }
+        .im-checkbox-text { font-size: 13px; color: rgba(255,255,255,0.45); line-height: 1.5; }
 
-        /* Footer */
         .im-footer {
           padding: 16px 32px 20px;
           display: flex;
@@ -888,6 +748,15 @@ export default function IntakeModal({
           border-top: 1px solid rgba(255,255,255,0.05);
           flex-shrink: 0;
           background: #0E1424;
+          flex-direction: column;
+        }
+
+        .im-footer-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          width: 100%;
+          gap: 16px;
         }
 
         .im-btn-back {
@@ -902,10 +771,7 @@ export default function IntakeModal({
           cursor: pointer;
           transition: all 0.2s;
         }
-        .im-btn-back:hover {
-          border-color: rgba(255,255,255,0.25);
-          color: #fff;
-        }
+        .im-btn-back:hover { border-color: rgba(255,255,255,0.25); color: #fff; }
 
         .im-btn-next {
           position: relative;
@@ -921,6 +787,18 @@ export default function IntakeModal({
           transition: all 0.2s;
           overflow: hidden;
           letter-spacing: 0.02em;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          min-width: 130px;
+          justify-content: center;
+        }
+
+        .im-btn-next:disabled {
+          opacity: 0.65;
+          cursor: not-allowed;
+          transform: none !important;
+          box-shadow: none !important;
         }
 
         .im-btn-next::before {
@@ -932,20 +810,26 @@ export default function IntakeModal({
           transition: transform 0.5s;
         }
 
-        .im-btn-next:hover {
-          box-shadow: 0 0 24px rgba(20,236,92,0.45);
-          transform: translateY(-1px);
-        }
-        .im-btn-next:hover::before { transform: translateX(100%); }
-        .im-btn-next:active { transform: translateY(0); }
+        .im-btn-next:hover:not(:disabled) { box-shadow: 0 0 24px rgba(20,236,92,0.45); transform: translateY(-1px); }
+        .im-btn-next:hover:not(:disabled)::before { transform: translateX(100%); }
+        .im-btn-next:active:not(:disabled) { transform: translateY(0); }
 
-        .im-step-counter {
-          font-size: 12px;
-          color: rgba(255,255,255,0.25);
-          font-family: 'Syne', sans-serif;
+        /* Spinner */
+        .im-spinner {
+          width: 14px; height: 14px;
+          border: 2px solid rgba(5,5,10,0.3);
+          border-top-color: #05050A;
+          border-radius: 50%;
+          animation: im-spin 0.7s linear infinite;
+          flex-shrink: 0;
         }
 
-        /* Success */
+        @keyframes im-spin {
+          to { transform: rotate(360deg); }
+        }
+
+        .im-step-counter { font-size: 12px; color: rgba(255,255,255,0.25); font-family: 'Syne', sans-serif; }
+
         .im-success {
           padding: 60px 32px;
           display: flex;
@@ -971,21 +855,8 @@ export default function IntakeModal({
           to   { transform: scale(1); opacity: 1; }
         }
 
-        .im-success-title {
-          font-family: 'Syne', sans-serif;
-          font-size: 26px;
-          font-weight: 800;
-          color: #fff;
-          margin: 0;
-        }
-
-        .im-success-sub {
-          font-size: 15px;
-          color: rgba(255,255,255,0.45);
-          max-width: 360px;
-          line-height: 1.6;
-          margin: 0;
-        }
+        .im-success-title { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800; color: #fff; margin: 0; }
+        .im-success-sub { font-size: 15px; color: rgba(255,255,255,0.45); max-width: 360px; line-height: 1.6; margin: 0; }
 
         .im-success-close {
           margin-top: 8px;
@@ -1001,10 +872,7 @@ export default function IntakeModal({
           transition: all 0.2s;
           letter-spacing: 0.02em;
         }
-        .im-success-close:hover {
-          box-shadow: 0 0 24px rgba(20,236,92,0.45);
-          transform: translateY(-1px);
-        }
+        .im-success-close:hover { box-shadow: 0 0 24px rgba(20,236,92,0.45); transform: translateY(-1px); }
 
         @media (max-width: 600px) {
           .im-header { padding: 16px 18px 0; }
@@ -1043,7 +911,6 @@ export default function IntakeModal({
               </div>
             ) : (
               <>
-                {/* Header — fixed */}
                 <div className="im-header">
                   <div className="im-title-block">
                     <div className="im-badge">
@@ -1062,7 +929,6 @@ export default function IntakeModal({
                   </button>
                 </div>
 
-                {/* Step progress — fixed */}
                 <div className="im-progress-wrap">
                   <div className="im-steps">
                     {STEPS.map((s) => (
@@ -1085,7 +951,6 @@ export default function IntakeModal({
                   </div>
                 </div>
 
-                {/* Scrollable body */}
                 <div className="im-scrollable">
                   <div className="im-body">
                     {/* STEP 1 */}
@@ -1176,7 +1041,6 @@ export default function IntakeModal({
                           )}
                         </div>
 
-                        {/* Add-ons accordion */}
                         <div className="im-field">
                           <label className="im-label">
                             Add-ons
@@ -1268,7 +1132,6 @@ export default function IntakeModal({
                           Help us prepare the right team
                         </p>
 
-                        {/* Questionnaire Link */}
                         <div className="im-field">
                           <label className="im-label">
                             Questionnaire Link (or notes)
@@ -1283,7 +1146,6 @@ export default function IntakeModal({
                           />
                         </div>
 
-                        {/* Units Needed + Rush Handling */}
                         <div className="im-grid-2">
                           <div className="im-field">
                             <label className="im-label">
@@ -1325,7 +1187,6 @@ export default function IntakeModal({
                           </div>
                         </div>
 
-                        {/* Deadline + Delivery Format */}
                         <div className="im-grid-2">
                           <div className="im-field">
                             <label className="im-label">Deadline</label>
@@ -1357,7 +1218,6 @@ export default function IntakeModal({
                           </div>
                         </div>
 
-                        {/* Evidence Folder */}
                         <div className="im-field">
                           <label className="im-label">
                             Evidence folder link (optional)
@@ -1372,7 +1232,6 @@ export default function IntakeModal({
                           />
                         </div>
 
-                        {/* Queue note */}
                         <p className="im-queue-note">
                           Queue note: We process up to 2 units in parallel.
                           Additional units enter the queue. If evidence is not
@@ -1397,7 +1256,6 @@ export default function IntakeModal({
                           Final details before we get started
                         </p>
 
-                        {/* Additional Notes */}
                         <div className="im-field">
                           <textarea
                             className="im-textarea"
@@ -1410,11 +1268,10 @@ export default function IntakeModal({
                           />
                         </div>
 
-                        {/* Info box */}
                         <div className="im-info-box">
-                          After you submit, this demo page will show a
-                          confirmation message. You can connect the form to your
-                          email/CRM later.
+                          After you submit, you'll receive a confirmation and a
+                          Shivorik specialist will reach out within 2 hours to
+                          confirm scope and next steps.
                         </div>
 
                         <label
@@ -1455,22 +1312,43 @@ export default function IntakeModal({
                     )}
                   </div>
                 </div>
-                {/* end im-scrollable */}
 
-                {/* Footer — sticky */}
                 <div className="im-footer">
-                  <button
-                    className="im-btn-back"
-                    onClick={() => (step > 1 ? setStep(step - 1) : onClose())}
-                  >
-                    {step === 1 ? "Cancel" : "← Back"}
-                  </button>
+                  {/* Error banner */}
+                  {submitError && (
+                    <div className="im-submit-error" style={{ width: "100%" }}>
+                      ⚠ {submitError}
+                    </div>
+                  )}
 
-                  <span className="im-step-counter">Step {step} of 3</span>
+                  <div className="im-footer-row">
+                    <button
+                      className="im-btn-back"
+                      onClick={() => (step > 1 ? setStep(step - 1) : onClose())}
+                      disabled={isSubmitting}
+                    >
+                      {step === 1 ? "Cancel" : "← Back"}
+                    </button>
 
-                  <button className="im-btn-next" onClick={next}>
-                    {step === 3 ? "Submit →" : "Next →"}
-                  </button>
+                    <span className="im-step-counter">Step {step} of 3</span>
+
+                    <button
+                      className="im-btn-next"
+                      onClick={next}
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <span className="im-spinner" />
+                          Sending…
+                        </>
+                      ) : step === 3 ? (
+                        "Submit →"
+                      ) : (
+                        "Next →"
+                      )}
+                    </button>
+                  </div>
                 </div>
               </>
             )}
