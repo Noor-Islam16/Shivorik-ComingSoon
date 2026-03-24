@@ -5,6 +5,8 @@ const LAUNCH_DATE = new Date("2026-04-07T00:00:00");
 
 const BRAND = "SHIVORIK";
 const GREEN = "#14EC5C";
+const WEB3FORMS_ACCESS_KEY = import.meta.env
+  .VITE_WEB3FORMS_ACCESS_KEY as string;
 const COMING_SOON_CHARS = [
   "C",
   "O",
@@ -93,10 +95,13 @@ const KEYFRAMES = `
   60%  { opacity:0; transform:translateY(55%);  }
   100% { opacity:1; transform:translateY(0);    }
 }
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
 
 * { box-sizing: border-box; }
 
-/* Logo */
 .cs-logo-img {
   height: 120px;
 }
@@ -368,11 +373,31 @@ function CountBlock({ value, label }: { value: number; label: string }) {
   );
 }
 
+// Spinner for loading state
+function Spinner() {
+  return (
+    <span
+      style={{
+        display: "inline-block",
+        width: 14,
+        height: 14,
+        border: "2px solid rgba(0,0,0,0.25)",
+        borderTopColor: "#000",
+        borderRadius: "50%",
+        animation: "spin 0.7s linear infinite",
+        flexShrink: 0,
+      }}
+    />
+  );
+}
+
 export default function ComingSoon() {
   const [timeLeft, setTimeLeft] = useState<TimeLeft>(calcTimeLeft);
   const [email, setEmail] = useState("");
   const [notified, setNotified] = useState(false);
   const [emailError, setEmailError] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState(false);
 
   const [particles] = useState<Particle[]>(() =>
     Array.from({ length: 24 }, (_, i) => ({
@@ -398,14 +423,48 @@ export default function ComingSoon() {
     return () => clearInterval(id);
   }, []);
 
-  function handleNotify() {
+  async function handleNotify() {
+    // Client-side validation
     if (!email.trim() || !email.includes("@")) {
       setEmailError(true);
       setTimeout(() => setEmailError(false), 1800);
       return;
     }
-    setNotified(true);
-    setEmail("");
+
+    setLoading(true);
+    setSubmitError(false);
+
+    try {
+      const formData = new FormData();
+      formData.append("access_key", WEB3FORMS_ACCESS_KEY);
+      formData.append("email", email.trim());
+      formData.append("subject", "New Early Access Signup — Shivorik");
+      formData.append("from_name", "Shivorik Coming Soon");
+      // Honeypot field to block spam
+      formData.append("botcheck", "");
+
+      const res = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setNotified(true);
+        setEmail("");
+      } else {
+        console.error("Web3Forms error:", data);
+        setSubmitError(true);
+        setTimeout(() => setSubmitError(false), 3500);
+      }
+    } catch (err) {
+      console.error("Submit failed:", err);
+      setSubmitError(true);
+      setTimeout(() => setSubmitError(false), 3500);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -735,89 +794,132 @@ export default function ComingSoon() {
               <span>You're on the list — we'll be in touch!</span>
             </div>
           ) : (
-            <div
-              className="cs-notify-row"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexWrap: "wrap",
-              }}
-            >
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleNotify()}
-                placeholder="Enter your email address"
-                className="cs-email-input"
+            <>
+              <div
+                className="cs-notify-row"
                 style={{
-                  background: "rgba(255,255,255,0.04)",
-                  border: `1px solid ${emailError ? "#ff4444" : "rgba(255,255,255,0.1)"}`,
-                  borderRadius: 8,
-                  padding: "14px 20px",
-                  color: "#ffffff",
-                  fontSize: "0.88rem",
-                  outline: "none",
-                  fontFamily: "inherit",
-                  letterSpacing: "0.02em",
-                  transition: "border-color 0.3s, box-shadow 0.3s",
-                  boxShadow: emailError
-                    ? "0 0 0 3px rgba(255,68,68,0.15)"
-                    : "none",
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = GREEN;
-                  e.target.style.boxShadow = "0 0 0 3px rgba(20,236,92,0.1)";
-                }}
-                onBlur={(e) => {
-                  if (!emailError) {
-                    e.target.style.borderColor = "rgba(255,255,255,0.1)";
-                    e.target.style.boxShadow = "none";
-                  }
-                }}
-              />
-              <button
-                onClick={handleNotify}
-                className="cs-notify-btn"
-                style={{
-                  background: GREEN,
-                  color: "#000000",
-                  border: "none",
-                  borderRadius: 8,
-                  fontSize: "0.85rem",
-                  fontWeight: 700,
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                  cursor: "pointer",
-                  fontFamily: "inherit",
-                  transition:
-                    "background 0.25s, transform 0.2s, box-shadow 0.25s",
-                }}
-                onMouseEnter={(e) => {
-                  const el = e.currentTarget as HTMLButtonElement;
-                  el.style.background = "#0ec44d";
-                  el.style.transform = "translateY(-2px)";
-                  el.style.boxShadow = "0 8px 28px rgba(20,236,92,0.35)";
-                }}
-                onMouseLeave={(e) => {
-                  const el = e.currentTarget as HTMLButtonElement;
-                  el.style.background = GREEN;
-                  el.style.transform = "translateY(0)";
-                  el.style.boxShadow = "none";
-                }}
-                onMouseDown={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.transform =
-                    "translateY(1px)";
-                }}
-                onMouseUp={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.transform =
-                    "translateY(-2px)";
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexWrap: "wrap",
                 }}
               >
-                Notify Me
-              </button>
-            </div>
+                {/* Honeypot — hidden from real users, catches bots */}
+                <input
+                  type="checkbox"
+                  name="botcheck"
+                  style={{ display: "none" }}
+                />
+
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onKeyDown={(e) =>
+                    e.key === "Enter" && !loading && handleNotify()
+                  }
+                  placeholder="Enter your email address"
+                  className="cs-email-input"
+                  disabled={loading}
+                  style={{
+                    background: "rgba(255,255,255,0.04)",
+                    border: `1px solid ${emailError ? "#ff4444" : "rgba(255,255,255,0.1)"}`,
+                    borderRadius: 8,
+                    padding: "14px 20px",
+                    color: "#ffffff",
+                    fontSize: "0.88rem",
+                    outline: "none",
+                    fontFamily: "inherit",
+                    letterSpacing: "0.02em",
+                    transition: "border-color 0.3s, box-shadow 0.3s",
+                    boxShadow: emailError
+                      ? "0 0 0 3px rgba(255,68,68,0.15)"
+                      : "none",
+                    opacity: loading ? 0.6 : 1,
+                  }}
+                  onFocus={(e) => {
+                    if (!emailError) {
+                      e.target.style.borderColor = GREEN;
+                      e.target.style.boxShadow =
+                        "0 0 0 3px rgba(20,236,92,0.1)";
+                    }
+                  }}
+                  onBlur={(e) => {
+                    if (!emailError) {
+                      e.target.style.borderColor = "rgba(255,255,255,0.1)";
+                      e.target.style.boxShadow = "none";
+                    }
+                  }}
+                />
+                <button
+                  onClick={handleNotify}
+                  disabled={loading}
+                  className="cs-notify-btn"
+                  style={{
+                    background: loading ? "#0ec44d" : GREEN,
+                    color: "#000000",
+                    border: "none",
+                    borderRadius: 8,
+                    fontSize: "0.85rem",
+                    fontWeight: 700,
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    cursor: loading ? "not-allowed" : "pointer",
+                    fontFamily: "inherit",
+                    transition:
+                      "background 0.25s, transform 0.2s, box-shadow 0.25s",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 8,
+                    opacity: loading ? 0.85 : 1,
+                  }}
+                  onMouseEnter={(e) => {
+                    if (loading) return;
+                    const el = e.currentTarget as HTMLButtonElement;
+                    el.style.background = "#0ec44d";
+                    el.style.transform = "translateY(-2px)";
+                    el.style.boxShadow = "0 8px 28px rgba(20,236,92,0.35)";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (loading) return;
+                    const el = e.currentTarget as HTMLButtonElement;
+                    el.style.background = GREEN;
+                    el.style.transform = "translateY(0)";
+                    el.style.boxShadow = "none";
+                  }}
+                  onMouseDown={(e) => {
+                    if (loading) return;
+                    (e.currentTarget as HTMLButtonElement).style.transform =
+                      "translateY(1px)";
+                  }}
+                  onMouseUp={(e) => {
+                    if (loading) return;
+                    (e.currentTarget as HTMLButtonElement).style.transform =
+                      "translateY(-2px)";
+                  }}
+                >
+                  {loading && <Spinner />}
+                  {loading ? "Sending..." : "Notify Me"}
+                </button>
+              </div>
+
+              {/* Error message */}
+              {submitError && (
+                <p
+                  style={{
+                    marginTop: 12,
+                    fontFamily: "monospace",
+                    fontSize: "0.75rem",
+                    color: "#ff6b6b",
+                    letterSpacing: "0.06em",
+                    animation: "fadeIn 0.3s ease",
+                  }}
+                >
+                  Something went wrong. Please try again.
+                </p>
+              )}
+            </>
           )}
         </div>
       </main>
