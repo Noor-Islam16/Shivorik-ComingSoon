@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import logo from "../assets/logo.png";
+import IntakeModal from "@/components/Home/IntakeModal";
 
 const LAUNCH_DATE = new Date("2026-04-07T00:00:00");
 
@@ -98,6 +99,10 @@ const KEYFRAMES = `
 @keyframes spin {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
+}
+@keyframes cta-spin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
 * { box-sizing: border-box; }
@@ -255,6 +260,77 @@ const KEYFRAMES = `
 @media (max-width: 480px) {
   .cs-footer-text { font-size: 0.52rem; letter-spacing: 0.08em; }
 }
+
+/* ── Header CTA ── */
+.cs-cta-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  padding: 2px;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+}
+
+.cs-cta-wrapper::before {
+  content: "";
+  position: absolute;
+  width: 250%;
+  height: 600%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 110deg,
+    rgba(255,255,255,0.15) 140deg,
+    rgba(255,255,255,0.7) 170deg,
+    white 180deg,
+    rgba(255,255,255,0.7) 190deg,
+    rgba(255,255,255,0.15) 220deg,
+    transparent 250deg,
+    transparent 360deg
+  );
+  animation: cta-spin 2.4s linear infinite;
+  z-index: 0;
+  top: 50%;
+  left: 50%;
+  transform-origin: center center;
+  transform: translate(-50%, -50%) rotate(0deg);
+}
+
+.cs-cta-inner {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 20px;
+  border-radius: 9999px;
+  background-color: #14EC5C;
+  color: #05050A;
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+  border: none;
+  font-family: inherit;
+}
+
+.cs-cta-wrapper:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(20, 236, 92, 0.45);
+}
+
+.cs-cta-wrapper:active { transform: scale(0.96); }
+
+@media (max-width: 480px) {
+  .cs-cta-inner { font-size: 0.72rem; padding: 6px 12px; }
+}
+
+@media (max-width: 360px) {
+  .cs-cta-wrapper { display: none; }
+}
 `;
 
 function FlipChar({
@@ -398,6 +474,7 @@ export default function ComingSoon() {
   const [emailError, setEmailError] = useState(false);
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const [particles] = useState<Particle[]>(() =>
     Array.from({ length: 24 }, (_, i) => ({
@@ -559,31 +636,43 @@ export default function ComingSoon() {
           className="cs-logo-img"
           style={{ width: "auto", objectFit: "contain" }}
         />
-        <span
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            fontFamily: "monospace",
-            fontSize: "0.68rem",
-            color: "rgba(255,255,255,0.35)",
-            letterSpacing: "0.1em",
-            textTransform: "uppercase",
-          }}
-        >
+
+        {/* Right side: status + CTA */}
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <span
             style={{
-              width: 6,
-              height: 6,
-              borderRadius: "50%",
-              background: GREEN,
-              display: "inline-block",
-              flexShrink: 0,
-              animation: "blink 2s ease-in-out infinite",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              fontFamily: "monospace",
+              fontSize: "0.68rem",
+              color: "rgba(255,255,255,0.35)",
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
             }}
-          />
-          <span className="cs-status-text">In Development</span>
-        </span>
+          >
+            <span
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: "50%",
+                background: GREEN,
+                display: "inline-block",
+                flexShrink: 0,
+                animation: "blink 2s ease-in-out infinite",
+              }}
+            />
+            <span className="cs-status-text">In Development</span>
+          </span>
+
+          <button
+            onClick={() => setModalOpen(true)}
+            className="cs-cta-wrapper"
+            aria-label="Start intake"
+          >
+            <span className="cs-cta-inner">Start – 2 minute intake</span>
+          </button>
+        </div>
       </header>
 
       {/* Main */}
@@ -948,6 +1037,9 @@ export default function ComingSoon() {
         <span>© 2026 Shivorik</span>
         <span>All Rights Reserved</span>
       </footer>
+
+      {/* Intake Modal */}
+      <IntakeModal open={modalOpen} onClose={() => setModalOpen(false)} />
     </div>
   );
 }
